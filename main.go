@@ -99,6 +99,9 @@ func ShowReset() {
 
 }
 
+var translateFuji = -5.0
+var translateFujiX = 0.0
+
 // Update proceeds the game state.
 // Update is called every tick (1/60 [s] by default).
 func (g *Game) Update() error {
@@ -295,6 +298,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			} else {
 				roadCount++
 			}
+			if translateFuji > -150 {
+				translateFuji -= 5
+			}
+
+			fmt.Println(translateFuji)
+			if int(translateFuji)%20 == 0 {
+				translateFujiX -= 5
+			}
 		}
 
 		if g.counter%30 == 0 {
@@ -316,6 +327,17 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		skyopts := &ebiten.DrawImageOptions{}
 		skyopts.GeoM.Scale(.5, 1)
 		screen.DrawImage(img, skyopts)
+
+		fujiOpts := &ebiten.DrawImageOptions{}
+		fujiOpts.GeoM.Scale(0.35, 0.5)
+
+		fmt.Println("y: ", translateFuji, "x: ", translateFujiX)
+		fujiOpts.GeoM.Translate(translateFujiX, translateFuji)
+		img, _, err = ebitenutil.NewImageFromFile("./fuji.png")
+		if err != nil {
+			log.Fatal(err)
+		}
+		screen.DrawImage(img, fujiOpts)
 
 		img, _, err = ebitenutil.NewImageFromFile(road)
 		if err != nil {
