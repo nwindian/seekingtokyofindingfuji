@@ -6,6 +6,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 // Game implements ebiten.Game interface.
@@ -20,12 +21,11 @@ var roadCount = 1
 // Update is called every tick (1/60 [s] by default).
 func (g *Game) Update() error {
 	// Write your game's logical update.
-	if ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.IsKeyPressed(ebiten.KeyLeft) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyA) || inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
 		if tilt > -4 {
 			tilt--
 		}
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyD) || ebiten.IsKeyPressed(ebiten.KeyRight) {
+	} else if inpututil.IsKeyJustPressed(ebiten.KeyD) || inpututil.IsKeyJustPressed(ebiten.KeyRight) {
 		if tilt < 4 {
 			tilt++
 		}
@@ -81,7 +81,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 		eimg = img
 	case 2:
-
 		img, _, err := ebitenutil.NewImageFromFile("./right2.png")
 		if err != nil {
 			log.Fatal(err)
