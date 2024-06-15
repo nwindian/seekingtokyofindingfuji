@@ -19,6 +19,11 @@ var roadCount = 1
 var skyCount = 1
 var crash = false
 
+// Used for distance
+const FUJI_DISTANCE = 10000
+
+var currentDistance = 0.0
+
 // Used for determining acceleration and speed
 const PIXELS_PER_BANANA = 10
 const TICKS_PER_SECOND = 60
@@ -30,6 +35,11 @@ var speed = 0.0
 var ticksSinceLastPress = 0
 var bananasPerSecond = 0.0
 var bananasPerSecond2 = 0.0
+
+func UpdateDistance() {
+	bananasPerTick := speed / PIXELS_PER_BANANA
+	currentDistance += bananasPerTick
+}
 
 func UpdateAcceleration() {
 	rate := float64(TICKS_PER_SECOND / ticksSinceLastPress)
@@ -56,8 +66,8 @@ func Decelerate() {
 }
 
 func UpdateBPS() {
-	bananaPerTick := speed / PIXELS_PER_BANANA
-	bananasPerSecond = bananaPerTick * TICKS_PER_SECOND
+	bananasPerTick := speed / PIXELS_PER_BANANA
+	bananasPerSecond = bananasPerTick * TICKS_PER_SECOND
 }
 
 func UpdateBPS2() {
@@ -127,6 +137,7 @@ func (g *Game) Update() error {
 
 	UpdateBPS()
 	UpdateBPS2()
+	UpdateDistance()
 
 	return nil
 }
@@ -251,7 +262,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op.GeoM.Translate(0, 130)
 		screen.DrawImage(eimg, op)
 	}
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nAcceleration: %.2f Bananas / Sec^2\n", bananasPerSecond, bananasPerSecond2))
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nAcceleration: %.2f Bananas / Sec^2\nDistance: %.2f Bananas\nCompleted: %.1f%%\n", bananasPerSecond, bananasPerSecond2, currentDistance, (currentDistance*100)/FUJI_DISTANCE))
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
