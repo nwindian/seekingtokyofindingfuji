@@ -27,7 +27,7 @@ var crashedFade = 0
 var started = false
 
 // Used for distance
-const FUJI_DISTANCE = 5000
+const FUJI_DISTANCE = 100
 
 var currentDistance = 0.0
 
@@ -182,156 +182,170 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	var middleText *ebiten.Image
 	var titleScreen *ebiten.Image
 
-	if crashed {
-		switch tilt {
-		case -4:
-			img, _, err := ebitenutil.NewImageFromFile("./left_crash.png")
-			if err != nil {
-				log.Fatal(err)
-			}
-			eimg = img
-		case 4:
-			img, _, err := ebitenutil.NewImageFromFile("./right_crash.png")
-			if err != nil {
-				log.Fatal(err)
-			}
-			eimg = img
-		default:
-			img, _, err := ebitenutil.NewImageFromFile("./straight_crash.png")
-			if err != nil {
-				log.Fatal(err)
-			}
-			eimg = img
-		}
-		if crashedFade >= 60 {
-			eimg = nil
-			if g.counter%60 < 30 {
-				img, _, err := ebitenutil.NewImageFromFile("./restart.png")
+	if currentDistance < FUJI_DISTANCE {
+		if crashed {
+			switch tilt {
+			case -4:
+				img, _, err := ebitenutil.NewImageFromFile("./left_crash.png")
 				if err != nil {
 					log.Fatal(err)
 				}
-				middleText = img
+				eimg = img
+			case 4:
+				img, _, err := ebitenutil.NewImageFromFile("./right_crash.png")
+				if err != nil {
+					log.Fatal(err)
+				}
+				eimg = img
+			default:
+				img, _, err := ebitenutil.NewImageFromFile("./straight_crash.png")
+				if err != nil {
+					log.Fatal(err)
+				}
+				eimg = img
 			}
-		}
-	} else if started {
-		switch tilt {
-		case -3:
-			img, _, err := ebitenutil.NewImageFromFile("./left3.png")
-			if err != nil {
-				log.Fatal(err)
+			if crashedFade >= 60 {
+				eimg = nil
+				if g.counter%60 < 30 {
+					img, _, err := ebitenutil.NewImageFromFile("./restart.png")
+					if err != nil {
+						log.Fatal(err)
+					}
+					middleText = img
+				}
 			}
-			eimg = img
-		case -2:
-			img, _, err := ebitenutil.NewImageFromFile("./left2.png")
-			if err != nil {
-				log.Fatal(err)
-			}
-			eimg = img
-		case -1:
-			img, _, err := ebitenutil.NewImageFromFile("./left1.png")
-			if err != nil {
-				log.Fatal(err)
-			}
-			eimg = img
-		case 0:
-			img, _, err := ebitenutil.NewImageFromFile("./straight.png")
-			if err != nil {
-				log.Fatal("what", err)
-			}
-			eimg = img
-		case 1:
-			img, _, err := ebitenutil.NewImageFromFile("./right1.png")
-			if err != nil {
-				log.Fatal(err)
-			}
-			eimg = img
-		case 2:
-			img, _, err := ebitenutil.NewImageFromFile("./right2.png")
-			if err != nil {
-				log.Fatal(err)
-			}
-			eimg = img
-		case 3:
+		} else if started {
+			switch tilt {
+			case -3:
+				img, _, err := ebitenutil.NewImageFromFile("./left3.png")
+				if err != nil {
+					log.Fatal(err)
+				}
+				eimg = img
+			case -2:
+				img, _, err := ebitenutil.NewImageFromFile("./left2.png")
+				if err != nil {
+					log.Fatal(err)
+				}
+				eimg = img
+			case -1:
+				img, _, err := ebitenutil.NewImageFromFile("./left1.png")
+				if err != nil {
+					log.Fatal(err)
+				}
+				eimg = img
+			case 0:
+				img, _, err := ebitenutil.NewImageFromFile("./straight.png")
+				if err != nil {
+					log.Fatal("what", err)
+				}
+				eimg = img
+			case 1:
+				img, _, err := ebitenutil.NewImageFromFile("./right1.png")
+				if err != nil {
+					log.Fatal(err)
+				}
+				eimg = img
+			case 2:
+				img, _, err := ebitenutil.NewImageFromFile("./right2.png")
+				if err != nil {
+					log.Fatal(err)
+				}
+				eimg = img
+			case 3:
 
-			img, _, err := ebitenutil.NewImageFromFile("./right3.png")
+				img, _, err := ebitenutil.NewImageFromFile("./right3.png")
+				if err != nil {
+					log.Fatal(err)
+				}
+				eimg = img
+			}
+		} else {
+			img, _, err := ebitenutil.NewImageFromFile("./title.png")
 			if err != nil {
 				log.Fatal(err)
 			}
-			eimg = img
+			titleScreen = img
 		}
-	} else {
-		img, _, err := ebitenutil.NewImageFromFile("./title.png")
+
+		//dRAW IMAGE
+		opts := &ebiten.DrawImageOptions{}
+		opts.GeoM.Scale(0.5, 1)
+		opts.GeoM.Translate(0, 175)
+
+		var road string
+		var sky string
+
+		roadRate := 60 - min(59, int(bananasPerSecond)/2)
+
+		g.counter++
+		if speed != 0 && g.counter%roadRate == 0 {
+			if roadCount == 3 {
+				roadCount = 1
+			} else {
+				roadCount++
+			}
+		}
+
+		if g.counter%30 == 0 {
+			if skyCount == 3 {
+				skyCount = 1
+			} else {
+				skyCount++
+			}
+		}
+
+		road = fmt.Sprintf("./theRoad%d.png", roadCount)
+		sky = fmt.Sprintf("./theSky%d.png", skyCount)
+
+		img, _, err := ebitenutil.NewImageFromFile(sky)
 		if err != nil {
 			log.Fatal(err)
 		}
-		titleScreen = img
-	}
 
-	//dRAW IMAGE
-	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Scale(0.5, 1)
-	opts.GeoM.Translate(0, 175)
+		skyopts := &ebiten.DrawImageOptions{}
+		skyopts.GeoM.Scale(.5, 1)
+		screen.DrawImage(img, skyopts)
 
-	var road string
-	var sky string
+		img, _, err = ebitenutil.NewImageFromFile(road)
+		if err != nil {
+			log.Fatal(err)
+		}
+		screen.DrawImage(img, opts)
 
-	roadRate := 60 - min(59, int(bananasPerSecond)/2)
+		if eimg != nil {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(0, 130)
+			screen.DrawImage(eimg, op)
+		}
 
-	g.counter++
-	if speed != 0 && g.counter%roadRate == 0 {
-		if roadCount == 3 {
-			roadCount = 1
-		} else {
-			roadCount++
+		if middleText != nil {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(0, 150)
+			op.GeoM.Scale(.25, .25)
+			screen.DrawImage(middleText, op)
+		}
+
+		if titleScreen != nil {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(0, 50)
+			op.GeoM.Scale(.25, .25)
+			screen.DrawImage(titleScreen, op)
+		}
+		ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nAcceleration: %.2f Bananas / Sec^2\nDistance: %.2f Bananas\nCompleted: %.1f%%\n", bananasPerSecond, bananasPerSecond2, currentDistance, (currentDistance*100)/FUJI_DISTANCE))
+	} else {
+		fuji, _, err := ebitenutil.NewImageFromFile("./fujiSide.png")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if fuji != nil {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(0, -50)
+			op.GeoM.Scale(.25, .25)
+			screen.DrawImage(fuji, op)
 		}
 	}
-
-	if g.counter%30 == 0 {
-		if skyCount == 3 {
-			skyCount = 1
-		} else {
-			skyCount++
-		}
-	}
-
-	road = fmt.Sprintf("./theRoad%d.png", roadCount)
-	sky = fmt.Sprintf("./theSky%d.png", skyCount)
-
-	img, _, err := ebitenutil.NewImageFromFile(sky)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	skyopts := &ebiten.DrawImageOptions{}
-	skyopts.GeoM.Scale(.5, 1)
-	screen.DrawImage(img, skyopts)
-
-	img, _, err = ebitenutil.NewImageFromFile(road)
-	if err != nil {
-		log.Fatal(err)
-	}
-	screen.DrawImage(img, opts)
-
-	if eimg != nil {
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(0, 130)
-		screen.DrawImage(eimg, op)
-	}
-
-	if middleText != nil {
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(0, 150)
-		op.GeoM.Scale(.25, .25)
-		screen.DrawImage(middleText, op)
-	}
-
-	if titleScreen != nil {
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(0, 50)
-		op.GeoM.Scale(.25, .25)
-		screen.DrawImage(titleScreen, op)
-	}
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nAcceleration: %.2f Bananas / Sec^2\nDistance: %.2f Bananas\nCompleted: %.1f%%\n", bananasPerSecond, bananasPerSecond2, currentDistance, (currentDistance*100)/FUJI_DISTANCE))
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
