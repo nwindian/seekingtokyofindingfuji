@@ -82,7 +82,7 @@ func UpdateBPS2() {
 }
 
 func UpdateBalance() {
-	tiltRate := 60 - min(55, int(bananasPerSecond)/2)
+	tiltRate := 60 - min(55, int(bananasPerSecond)/3)
 
 	if ticksSinceLastPress%tiltRate == 0 {
 		if tilt < 0 {
@@ -176,6 +176,8 @@ func Crash() {
 // Draw is called every frame (typically 1/60[s] for 60Hz display).
 func (g *Game) Draw(screen *ebiten.Image) {
 	var eimg *ebiten.Image
+	var middleText *ebiten.Image
+
 	if crashed {
 		switch tilt {
 		case -4:
@@ -198,13 +200,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			eimg = img
 		}
 		if crashedFade >= 60 {
-			img, _, err := ebitenutil.NewImageFromFile("./restart.png")
-			if err != nil {
-				log.Fatal(err)
-			}
-			eimg = img
-			if g.counter%30 == 0 {
-				eimg = nil
+			eimg = nil
+			if g.counter%60 < 30 {
+				img, _, err := ebitenutil.NewImageFromFile("./restart.png")
+				if err != nil {
+					log.Fatal(err)
+				}
+				middleText = img
 			}
 		}
 	} else {
@@ -304,6 +306,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(0, 130)
 		screen.DrawImage(eimg, op)
+	}
+
+	if middleText != nil {
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(0, 150)
+		op.GeoM.Scale(.25, .25)
+		screen.DrawImage(middleText, op)
 	}
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nAcceleration: %.2f Bananas / Sec^2\nDistance: %.2f Bananas\nCompleted: %.1f%%\n", bananasPerSecond, bananasPerSecond2, currentDistance, (currentDistance*100)/FUJI_DISTANCE))
 }
