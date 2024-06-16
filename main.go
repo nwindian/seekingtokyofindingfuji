@@ -99,8 +99,12 @@ func ShowReset() {
 
 }
 
-var translateFuji = -5.0
+var translateFuji = 75.0
 var translateFujiX = 0.0
+var scaleFujiX = 0.35
+var scaleFujiY = .5
+var translateRoadY = 175.0
+var stop = false
 
 // Update proceeds the game state.
 // Update is called every tick (1/60 [s] by default).
