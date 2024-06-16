@@ -44,6 +44,11 @@ var ticksSinceLastPress = 0
 var bananasPerSecond = 0.0
 var bananasPerSecond2 = 0.0
 
+var bikerHeight = 500
+var translateBikerHeight = 0
+var translateBikerDistance = -500
+var finalBananasPerSecond = -1.0
+
 func UpdateDistance() {
 	bananasPerTick := speed / PIXELS_PER_BANANA
 	currentDistance += bananasPerTick
@@ -99,11 +104,11 @@ func ShowReset() {
 
 }
 
-var translateFuji = 75.0
+var translateFuji = 20.0
 var translateFujiX = 0.0
 var scaleFujiX = 0.35
 var scaleFujiY = .5
-var translateRoadY = 175.0
+var translateRoadY = 50.0
 var stop = false
 
 // Update proceeds the game state.
@@ -173,6 +178,7 @@ func (g *Game) Update() error {
 }
 
 func reset() {
+	finalBananasPerSecond = -1.0
 	currentDistance = 0
 	tilt = 0
 	crashedFade = 0
@@ -223,6 +229,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 						log.Fatal(err)
 					}
 					middleText = img
+					translateFuji = 20.0
+					translateFujiX = 0.0
+					scaleFujiX = 0.35
+					scaleFujiY = .5
+					translateRoadY = 50.0
+					stop = false
 				}
 			}
 		} else if started {
@@ -289,6 +301,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		opts := &ebiten.DrawImageOptions{}
 		opts.GeoM.Scale(0.5, 1)
 		opts.GeoM.Translate(0, 175)
+		opts.GeoM.Translate(0, translateRoadY)
 
 		var road string
 		var sky string
@@ -302,13 +315,54 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			} else {
 				roadCount++
 			}
-			if translateFuji > -150 {
-				translateFuji -= 5
+			fmt.Println("translatefuji: ", translateFuji)
+			t := bananasPerSecond / 500.0
+			if translateFuji > -90 && !stop {
+				fmt.Println(fmt.Println("babanas per second: ", bananasPerSecond))
+				//t := bananasPerSecond / 200.0
+				fmt.Println("T: ", t)
+				translateFuji -= t
+			} else {
+				fmt.Println("STOP: ", stop)
+				fmt.Println("T: ", t)
+				fmt.Println("translateFuji: ", translateFuji)
+				fmt.Println("translateFujiX: ", translateFujiX)
+				fmt.Println("translateRoadY: ", translateRoadY)
+				fmt.Println("scaleFujiX: ", scaleFujiX)
+				// return
 			}
 
-			fmt.Println(translateFuji)
-			if int(translateFuji)%20 == 0 {
-				translateFujiX -= 5
+			fmt.Println("translatefuji: ", translateFuji)
+			fmt.Println(int(translateFuji)%91 == 0)
+			fmt.Println(int(translateFuji) % 91)
+			fmt.Println("translateFujiX: ", translateFujiX)
+			if (int(translateFuji)%91 == 0 || int(translateFuji)%90 == 0) && translateFujiX > -25 {
+				fmt.Println("WE ARE HERE 1")
+				translateFujiX -= 2
+			} else if translateFujiX == -25 {
+				fmt.Println("WE ARE HERE 2")
+				translateFuji += t
+				//translateFujiX -= .2
+				translateRoadY += t
+				stop = true
+				scaleFujiX += t / 5000
+			} else if translateFujiX < -25 {
+				fmt.Println("WE ARE HERE 3: ", translateRoadY)
+				if translateRoadY < 20 {
+					fmt.Println("WE ARE HERE 4")
+					translateFuji += t
+					translateRoadY += t
+					fmt.Println("STOP: ", stop)
+				} else {
+					fmt.Println("WE ARE HERE 5")
+					scaleFujiX += t / 5000
+					if translateFujiX > -103 {
+						translateFujiX -= .1
+					} else {
+						translateFujiX -= .05
+					}
+
+				}
 			}
 		}
 
@@ -333,9 +387,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		screen.DrawImage(img, skyopts)
 
 		fujiOpts := &ebiten.DrawImageOptions{}
-		fujiOpts.GeoM.Scale(0.35, 0.5)
+		fujiOpts.GeoM.Scale(scaleFujiX, scaleFujiY)
 
-		fmt.Println("y: ", translateFuji, "x: ", translateFujiX)
 		fujiOpts.GeoM.Translate(translateFujiX, translateFuji)
 		img, _, err = ebitenutil.NewImageFromFile("./fuji.png")
 		if err != nil {
@@ -367,6 +420,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			op.GeoM.Translate(0, 50)
 			op.GeoM.Scale(.25, .25)
 			screen.DrawImage(titleScreen, op)
+
+			iop := &ebiten.DrawImageOptions{}
+			iop.GeoM.Translate(2100, 4900)
+			iop.GeoM.Scale(.05, .05)
 		}
 		if instructionScreen != nil {
 			op := &ebiten.DrawImageOptions{}
@@ -382,10 +439,96 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 
 		if fuji != nil {
-			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(0, -50)
-			op.GeoM.Scale(.25, .25)
-			screen.DrawImage(fuji, op)
+			if finalBananasPerSecond == -1.0 {
+				finalBananasPerSecond = bananasPerSecond
+			}
+			if finalBananasPerSecond > 160 {
+				fmt.Println("success: ", finalBananasPerSecond)
+				ebitenutil.DebugPrint(screen, fmt.Sprintf("Success: %.2f", bananasPerSecond))
+
+				op := &ebiten.DrawImageOptions{}
+				op.GeoM.Translate(0, -50)
+				op.GeoM.Scale(.25, .25)
+				screen.DrawImage(fuji, op)
+
+				bikerOp := &ebiten.DrawImageOptions{}
+				bikerOp.GeoM.Translate(float64(translateBikerDistance), float64(bikerHeight))
+				fmt.Println("bikerDistance: ", translateBikerDistance)
+				fmt.Println("bikerHeight: ", bikerHeight)
+				if translateBikerDistance < 925 {
+					translateBikerDistance += 5
+					bikerHeight -= 1
+
+					fmt.Println("bikerHeight: ", bikerHeight)
+				} else {
+					img, _, err := ebitenutil.NewImageFromFile("./restart.png")
+					if err != nil {
+						log.Fatal(err)
+					}
+					middleText = img
+					translateFuji = 20.0
+					translateFujiX = 0.0
+					scaleFujiX = 0.35
+					scaleFujiY = .5
+					translateRoadY = 50.0
+					stop = false
+					op := &ebiten.DrawImageOptions{}
+					op.GeoM.Translate(0, 150)
+					op.GeoM.Scale(.25, .25)
+
+					screen.DrawImage(middleText, op)
+					ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nAcceleration: %.2f Bananas / Sec^2\nDistance: %.2f Bananas\nCompleted: %.1f%%\nSuccess!", bananasPerSecond, bananasPerSecond2, currentDistance, (currentDistance*100)/FUJI_DISTANCE))
+				}
+				bikerOp.GeoM.Scale(.25, .25)
+				biker, _, err := ebitenutil.NewImageFromFile("./sidebike.png")
+				if err != nil {
+					log.Fatal(err)
+				}
+				screen.DrawImage(biker, bikerOp)
+			} else {
+				fmt.Println("fail: ", bananasPerSecond)
+				ebitenutil.DebugPrint(screen, fmt.Sprintf("Fail: %.2f", bananasPerSecond))
+				op := &ebiten.DrawImageOptions{}
+				op.GeoM.Translate(0, -50)
+				op.GeoM.Scale(.25, .25)
+				screen.DrawImage(fuji, op)
+
+				bikerOp := &ebiten.DrawImageOptions{}
+				bikerOp.GeoM.Translate(float64(translateBikerDistance), float64(bikerHeight))
+				if translateBikerDistance < 125 {
+					translateBikerDistance += 5
+					bikerHeight += 2
+				} else {
+					img, _, err := ebitenutil.NewImageFromFile("./restart.png")
+					if err != nil {
+						log.Fatal(err)
+					}
+					middleText = img
+					translateFuji = 20.0
+					translateFujiX = 0.0
+					scaleFujiX = 0.35
+					scaleFujiY = .5
+					translateRoadY = 50.0
+					stop = false
+					op := &ebiten.DrawImageOptions{}
+					op.GeoM.Translate(0, 150)
+					op.GeoM.Scale(.25, .25)
+
+					screen.DrawImage(middleText, op)
+					ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nAcceleration: %.2f Bananas / Sec^2\nDistance: %.2f Bananas\nCompleted: %.1f%%\nFail!", bananasPerSecond, bananasPerSecond2, currentDistance, (currentDistance*100)/FUJI_DISTANCE))
+				}
+
+				fmt.Println("bikerDistance: ", translateBikerDistance)
+				fmt.Println("bikerHeight: ", bikerHeight)
+
+				bikerOp.GeoM.Scale(.25, .25)
+				biker, _, err := ebitenutil.NewImageFromFile("./sidebike.png")
+				if err != nil {
+					log.Fatal(err)
+				}
+				screen.DrawImage(biker, bikerOp)
+			}
+
 		}
 	}
 }
