@@ -14,13 +14,19 @@ type Game struct {
 	counter int
 }
 
+const (
+	screenWidth  = 640
+	screenHeight = 900
+)
+
 var tilt int
 var roadCount = 1
 var skyCount = 1
-var crash = false
+var crashed = false
+var crashedFade = 0
 
 // Used for distance
-const FUJI_DISTANCE = 10000
+const FUJI_DISTANCE = 5000
 
 var currentDistance = 0.0
 
@@ -76,83 +82,101 @@ func UpdateBPS2() {
 }
 
 func UpdateBalance() {
-	if ticksSinceLastPress%30 == 0 {
+	tiltRate := 60 - min(55, int(bananasPerSecond)/2)
+
+	if ticksSinceLastPress%tiltRate == 0 {
 		if tilt < 0 {
-			tilt--
+			tilt -= 1
 		} else if tilt > 0 {
-			tilt++
+			tilt += 1
 		}
 	}
+}
+
+func ShowReset() {
+
 }
 
 // Update proceeds the game state.
 // Update is called every tick (1/60 [s] by default).
 func (g *Game) Update() error {
 	// Write your game's logical update.
-	leftPressed := inpututil.IsKeyJustPressed(ebiten.KeyA) || inpututil.IsKeyJustPressed(ebiten.KeyLeft)
-	rightPressed := inpututil.IsKeyJustPressed(ebiten.KeyD) || inpututil.IsKeyJustPressed(ebiten.KeyRight)
-	straightPressed := inpututil.IsKeyJustPressed(ebiten.KeyW) || inpututil.IsKeyJustPressed(ebiten.KeyUp)
+	if !crashed {
+		leftPressed := inpututil.IsKeyJustPressed(ebiten.KeyA) || inpututil.IsKeyJustPressed(ebiten.KeyLeft)
+		rightPressed := inpututil.IsKeyJustPressed(ebiten.KeyD) || inpututil.IsKeyJustPressed(ebiten.KeyRight)
+		straightPressed := inpututil.IsKeyJustPressed(ebiten.KeyW) || inpututil.IsKeyJustPressed(ebiten.KeyUp)
 
-	if leftPressed {
-		if tilt == 1 {
-			tilt = -1
+		if leftPressed {
+			if tilt == 1 {
+				tilt = -1
+			} else {
+				tilt--
+			}
+		}
+		if rightPressed {
+			if tilt == -1 {
+				tilt = 1
+			} else {
+				tilt++
+			}
+		}
+		if straightPressed {
+			if tilt == -1 || tilt == 1 {
+				tilt = 0
+			}
+		}
+
+		if leftPressed && rightPressed {
+			Crash()
+		} else if leftPressed != rightPressed {
+			UpdateAcceleration()
+			ticksSinceLastPress = 0
+
 		} else {
-			tilt--
+			UpdateBalance()
 		}
-	}
-	if rightPressed {
-		if tilt == -1 {
-			tilt = 1
-		} else {
-			tilt++
-		}
-	}
-	if straightPressed {
-		if tilt == -1 || tilt == 1 {
-			tilt = 0
-		}
-	}
 
-	if leftPressed && rightPressed {
-		// Straight crash
-		crash = true
-	} else if leftPressed != rightPressed {
-		UpdateAcceleration()
-		ticksSinceLastPress = 0
+		if tilt == -4 || tilt == 4 {
+			Crash()
+		}
 
+		UpdateSpeed()
+		ticksSinceLastPress++
+		if ticksSinceLastPress > 60 {
+			Decelerate()
+		}
+
+		UpdateBPS()
+		UpdateBPS2()
+		UpdateDistance()
 	} else {
-		UpdateBalance()
+		crashedFade++
+		if inpututil.IsKeyJustPressed(ebiten.KeyR) && crashedFade >= 60 {
+			reset()
+		}
 	}
-
-	if tilt == -3 || tilt == 3 {
-		// end
-		fmt.Print("Game Over\n")
-	}
-
-	UpdateSpeed()
-	ticksSinceLastPress++
-	if ticksSinceLastPress > 60 {
-		Decelerate()
-	}
-
-	UpdateBPS()
-	UpdateBPS2()
-	UpdateDistance()
 
 	return nil
+}
+
+func reset() {
+	currentDistance = 0
+	tilt = 0
+	crashedFade = 0
+	crashed = false
+}
+
+func Crash() {
+	speed = 0
+	acceleration = 0
+	crashed = true
 }
 
 // Draw draws the game screen.
 // Draw is called every frame (typically 1/60[s] for 60Hz display).
 func (g *Game) Draw(screen *ebiten.Image) {
 	var eimg *ebiten.Image
-	if crash {
-		img, _, err := ebitenutil.NewImageFromFile("./straight_crash.png")
-		if err != nil {
-			log.Fatal(err)
-		}
-		eimg = img
-	} else {
+	if crashed {
 		switch tilt {
 		case -4:
 			img, _, err := ebitenutil.NewImageFromFile("./left_crash.png")
@@ -166,6 +190,25 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				log.Fatal(err)
 			}
 			eimg = img
+		default:
+			img, _, err := ebitenutil.NewImageFromFile("./straight_crash.png")
+			if err != nil {
+				log.Fatal(err)
+			}
+			eimg = img
+		}
+		if crashedFade >= 60 {
+			img, _, err := ebitenutil.NewImageFromFile("./restart.png")
+			if err != nil {
+				log.Fatal(err)
+			}
+			eimg = img
+			if g.counter%30 == 0 {
+				eimg = nil
+			}
+		}
+	} else {
+		switch tilt {
 		case -3:
 			img, _, err := ebitenutil.NewImageFromFile("./left3.png")
 			if err != nil {
@@ -274,7 +317,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func main() {
 	game := &Game{}
 	// Specify the window size as you like. Here, a doubled size is specified.
-	ebiten.SetWindowSize(640, 900)
+	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.Monitor().Size()
 	ebiten.SetWindowTitle("Seeking Tokyo Finding Fuji")
 	// Call ebiten.RunGame to start your game loop.
