@@ -24,6 +24,7 @@ var roadCount = 1
 var skyCount = 1
 var crashed = false
 var crashedFade = 0
+var started = false
 
 // Used for distance
 const FUJI_DISTANCE = 5000
@@ -101,7 +102,7 @@ func ShowReset() {
 // Update is called every tick (1/60 [s] by default).
 func (g *Game) Update() error {
 	// Write your game's logical update.
-	if !crashed {
+	if !crashed && started {
 		leftPressed := inpututil.IsKeyJustPressed(ebiten.KeyA) || inpututil.IsKeyJustPressed(ebiten.KeyLeft)
 		rightPressed := inpututil.IsKeyJustPressed(ebiten.KeyD) || inpututil.IsKeyJustPressed(ebiten.KeyRight)
 		straightPressed := inpututil.IsKeyJustPressed(ebiten.KeyW) || inpututil.IsKeyJustPressed(ebiten.KeyUp)
@@ -149,11 +150,13 @@ func (g *Game) Update() error {
 		UpdateBPS()
 		UpdateBPS2()
 		UpdateDistance()
-	} else {
+	} else if started {
 		crashedFade++
 		if inpututil.IsKeyJustPressed(ebiten.KeyR) && crashedFade >= 60 {
 			reset()
 		}
+	} else if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		started = true
 	}
 
 	return nil
@@ -177,6 +180,7 @@ func Crash() {
 func (g *Game) Draw(screen *ebiten.Image) {
 	var eimg *ebiten.Image
 	var middleText *ebiten.Image
+	var titleScreen *ebiten.Image
 
 	if crashed {
 		switch tilt {
@@ -209,7 +213,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				middleText = img
 			}
 		}
-	} else {
+	} else if started {
 		switch tilt {
 		case -3:
 			img, _, err := ebitenutil.NewImageFromFile("./left3.png")
@@ -255,6 +259,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			}
 			eimg = img
 		}
+	} else {
+		img, _, err := ebitenutil.NewImageFromFile("./title.png")
+		if err != nil {
+			log.Fatal(err)
+		}
+		titleScreen = img
 	}
 
 	//dRAW IMAGE
@@ -313,6 +323,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op.GeoM.Translate(0, 150)
 		op.GeoM.Scale(.25, .25)
 		screen.DrawImage(middleText, op)
+	}
+
+	if titleScreen != nil {
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(0, 50)
+		op.GeoM.Scale(.25, .25)
+		screen.DrawImage(titleScreen, op)
 	}
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nAcceleration: %.2f Bananas / Sec^2\nDistance: %.2f Bananas\nCompleted: %.1f%%\n", bananasPerSecond, bananasPerSecond2, currentDistance, (currentDistance*100)/FUJI_DISTANCE))
 }
