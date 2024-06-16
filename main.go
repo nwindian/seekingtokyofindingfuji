@@ -25,9 +25,10 @@ var skyCount = 1
 var crashed = false
 var crashedFade = 0
 var started = false
+var instructions = false
 
 // Used for distance
-const FUJI_DISTANCE = 100
+const FUJI_DISTANCE = 5000
 
 var currentDistance = 0.0
 
@@ -83,7 +84,7 @@ func UpdateBPS2() {
 }
 
 func UpdateBalance() {
-	tiltRate := 60 - min(55, int(bananasPerSecond)/3)
+	tiltRate := 60 - min(50, int(bananasPerSecond)/3)
 
 	if ticksSinceLastPress%tiltRate == 0 {
 		if tilt < 0 {
@@ -156,6 +157,8 @@ func (g *Game) Update() error {
 			reset()
 		}
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		instructions = true
+	} else if instructions && inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		started = true
 	}
 
@@ -181,6 +184,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	var eimg *ebiten.Image
 	var middleText *ebiten.Image
 	var titleScreen *ebiten.Image
+	var instructionScreen *ebiten.Image
 
 	if currentDistance < FUJI_DISTANCE {
 		if crashed {
@@ -260,12 +264,18 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				}
 				eimg = img
 			}
-		} else {
+		} else if !instructions {
 			img, _, err := ebitenutil.NewImageFromFile("./title.png")
 			if err != nil {
 				log.Fatal(err)
 			}
 			titleScreen = img
+		} else {
+			img, _, err := ebitenutil.NewImageFromFile("./instructions.png")
+			if err != nil {
+				log.Fatal(err)
+			}
+			instructionScreen = img
 		}
 
 		//dRAW IMAGE
@@ -332,7 +342,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			op.GeoM.Scale(.25, .25)
 			screen.DrawImage(titleScreen, op)
 		}
-		ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nAcceleration: %.2f Bananas / Sec^2\nDistance: %.2f Bananas\nCompleted: %.1f%%\n", bananasPerSecond, bananasPerSecond2, currentDistance, (currentDistance*100)/FUJI_DISTANCE))
+		if instructionScreen != nil {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(5, 0)
+			op.GeoM.Scale(.12, .12)
+			screen.DrawImage(instructionScreen, op)
+		}
+		ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nDistance: %.2f Bananas\nCompleted: %.1f%%\n", bananasPerSecond, currentDistance, (currentDistance*100)/FUJI_DISTANCE))
 	} else {
 		fuji, _, err := ebitenutil.NewImageFromFile("./fujiSide.png")
 		if err != nil {
