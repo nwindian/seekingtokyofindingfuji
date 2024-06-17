@@ -1,4 +1,4 @@
-module github.com/nwindian/fujijump
+module github.com/nwindian/seekingtokyofindingfuji
 
 go 1.22.2
 
