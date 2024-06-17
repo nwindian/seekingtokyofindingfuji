@@ -31,7 +31,7 @@ var started = false
 var instructions = false
 
 // Used for distance
-const FUJI_DISTANCE = 50
+const FUJI_DISTANCE = 5000
 
 var currentDistance = 0.0
 
@@ -155,12 +155,12 @@ func (g *Game) Update() error {
 				log.Fatal(err)
 			}
 
-			audioContext.NewPlayer(s)
 			p, err := audioContext.NewPlayer(s)
 			if err != nil {
 				log.Fatal(err)
 			}
 
+			p.SetVolume(.2)
 			p.Play()
 		}
 
@@ -322,7 +322,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			instructionScreen = img
 		}
 
-		//dRAW IMAGE
 		opts := &ebiten.DrawImageOptions{}
 		opts.GeoM.Scale(0.5, 1)
 		opts.GeoM.Translate(0, 175)
@@ -459,7 +458,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 					translateBikerDistance += 5
 					bikerHeight -= 1
 				} else {
-					img, _, err := ebitenutil.NewImageFromFile("./restart.png")
+					img, _, err := ebitenutil.NewImageFromFile("./victory.png")
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -495,7 +494,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 					translateBikerDistance += 5
 					bikerHeight += 2
 				} else {
-					img, _, err := ebitenutil.NewImageFromFile("./restart.png")
+					img, _, err := ebitenutil.NewImageFromFile("./fail.png")
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -511,7 +510,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 					op.GeoM.Scale(.25, .25)
 
 					screen.DrawImage(middleText, op)
-					ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nDistance: %.2f Bananas\nCompleted: 100%%\nSuccess!", finalBananasPerSecond, finalDistance))
+					ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nDistance: %.2f Bananas\nCompleted: 100%%\nFail!", finalBananasPerSecond, finalDistance))
 				}
 				bikerOp.GeoM.Scale(.25, .25)
 				biker, _, err := ebitenutil.NewImageFromFile("./sidebike.png")
