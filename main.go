@@ -5,6 +5,8 @@ import (
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/hajimehoshi/ebiten/v2/audio/mp3"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
@@ -19,6 +21,7 @@ const (
 	screenHeight = 900
 )
 
+var audioContext = audio.NewContext(48000)
 var tilt int
 var roadCount = 1
 var skyCount = 1
@@ -28,7 +31,7 @@ var started = false
 var instructions = false
 
 // Used for distance
-const FUJI_DISTANCE = 5000
+const FUJI_DISTANCE = 50
 
 var currentDistance = 0.0
 
@@ -139,6 +142,26 @@ func (g *Game) Update() error {
 			if tilt == -1 || tilt == 1 {
 				tilt = 0
 			}
+		}
+
+		if g.counter%100 == 0 {
+			f, err := ebitenutil.OpenFile("./sound.mp3")
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			s, err := mp3.DecodeWithoutResampling(f)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			audioContext.NewPlayer(s)
+			p, err := audioContext.NewPlayer(s)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			p.Play()
 		}
 
 		if leftPressed && rightPressed {
