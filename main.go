@@ -145,7 +145,7 @@ func (g *Game) Update() error {
 		}
 
 		if g.counter%100 == 0 {
-			f, err := ebitenutil.OpenFile("./sound.mp3")
+			f, err := ebitenutil.OpenFile("./assets/sound.mp3")
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -160,7 +160,7 @@ func (g *Game) Update() error {
 				log.Fatal(err)
 			}
 
-			p.SetVolume(.2)
+			p.SetVolume(.07)
 			p.Play()
 		}
 
@@ -228,19 +228,19 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		if crashed {
 			switch tilt {
 			case -4:
-				img, _, err := ebitenutil.NewImageFromFile("./left_crash.png")
+				img, _, err := ebitenutil.NewImageFromFile("./assets/left_crash.png")
 				if err != nil {
 					log.Fatal(err)
 				}
 				eimg = img
 			case 4:
-				img, _, err := ebitenutil.NewImageFromFile("./right_crash.png")
+				img, _, err := ebitenutil.NewImageFromFile("./assets/right_crash.png")
 				if err != nil {
 					log.Fatal(err)
 				}
 				eimg = img
 			default:
-				img, _, err := ebitenutil.NewImageFromFile("./straight_crash.png")
+				img, _, err := ebitenutil.NewImageFromFile("./assets/straight_crash.png")
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -249,7 +249,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			if crashedFade >= 60 {
 				eimg = nil
 				if g.counter%60 < 30 {
-					img, _, err := ebitenutil.NewImageFromFile("./restart.png")
+					img, _, err := ebitenutil.NewImageFromFile("./assets/restart.png")
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -265,57 +265,57 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		} else if started {
 			switch tilt {
 			case -3:
-				img, _, err := ebitenutil.NewImageFromFile("./left3.png")
+				img, _, err := ebitenutil.NewImageFromFile("./assets/left3.png")
 				if err != nil {
 					log.Fatal(err)
 				}
 				eimg = img
 			case -2:
-				img, _, err := ebitenutil.NewImageFromFile("./left2.png")
+				img, _, err := ebitenutil.NewImageFromFile("./assets/left2.png")
 				if err != nil {
 					log.Fatal(err)
 				}
 				eimg = img
 			case -1:
-				img, _, err := ebitenutil.NewImageFromFile("./left1.png")
+				img, _, err := ebitenutil.NewImageFromFile("./assets/left1.png")
 				if err != nil {
 					log.Fatal(err)
 				}
 				eimg = img
 			case 0:
-				img, _, err := ebitenutil.NewImageFromFile("./straight.png")
+				img, _, err := ebitenutil.NewImageFromFile("./assets/straight.png")
 				if err != nil {
 					log.Fatal("what", err)
 				}
 				eimg = img
 			case 1:
-				img, _, err := ebitenutil.NewImageFromFile("./right1.png")
+				img, _, err := ebitenutil.NewImageFromFile("./assets/right1.png")
 				if err != nil {
 					log.Fatal(err)
 				}
 				eimg = img
 			case 2:
-				img, _, err := ebitenutil.NewImageFromFile("./right2.png")
+				img, _, err := ebitenutil.NewImageFromFile("./assets/right2.png")
 				if err != nil {
 					log.Fatal(err)
 				}
 				eimg = img
 			case 3:
 
-				img, _, err := ebitenutil.NewImageFromFile("./right3.png")
+				img, _, err := ebitenutil.NewImageFromFile("./assets/right3.png")
 				if err != nil {
 					log.Fatal(err)
 				}
 				eimg = img
 			}
 		} else if !instructions {
-			img, _, err := ebitenutil.NewImageFromFile("./title.png")
+			img, _, err := ebitenutil.NewImageFromFile("./assets/title.png")
 			if err != nil {
 				log.Fatal(err)
 			}
 			titleScreen = img
 		} else {
-			img, _, err := ebitenutil.NewImageFromFile("./instructions.png")
+			img, _, err := ebitenutil.NewImageFromFile("./assets/instructions.png")
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -376,8 +376,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			}
 		}
 
-		road = fmt.Sprintf("./theRoad%d.png", roadCount)
-		sky = fmt.Sprintf("./theSky%d.png", skyCount)
+		road = fmt.Sprintf("./assets/theRoad%d.png", roadCount)
+		sky = fmt.Sprintf("./assets/theSky%d.png", skyCount)
 
 		img, _, err := ebitenutil.NewImageFromFile(sky)
 		if err != nil {
@@ -392,7 +392,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		fujiOpts.GeoM.Scale(scaleFujiX, scaleFujiY)
 
 		fujiOpts.GeoM.Translate(translateFujiX, translateFuji)
-		img, _, err = ebitenutil.NewImageFromFile("./fuji.png")
+		img, _, err = ebitenutil.NewImageFromFile("./assets/fuji.png")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -435,7 +435,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 		ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nDistance: %.2f Bananas\nCompleted: %.1f%%\n", bananasPerSecond, currentDistance, (currentDistance*100)/FUJI_DISTANCE))
 	} else {
-		fuji, _, err := ebitenutil.NewImageFromFile("./fujiSide.png")
+		fuji, _, err := ebitenutil.NewImageFromFile("./assets/fujiSide.png")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -458,7 +458,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 					translateBikerDistance += 5
 					bikerHeight -= 1
 				} else {
-					img, _, err := ebitenutil.NewImageFromFile("./victory.png")
+					img, _, err := ebitenutil.NewImageFromFile("./assets/victory.png")
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -477,7 +477,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 					ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nDistance: %.2f Bananas\nCompleted: 100%%\nSuccess!", finalBananasPerSecond, finalDistance))
 				}
 				bikerOp.GeoM.Scale(.25, .25)
-				biker, _, err := ebitenutil.NewImageFromFile("./sidebike.png")
+				biker, _, err := ebitenutil.NewImageFromFile("./assets/sidebike.png")
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -494,7 +494,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 					translateBikerDistance += 5
 					bikerHeight += 2
 				} else {
-					img, _, err := ebitenutil.NewImageFromFile("./fail.png")
+					img, _, err := ebitenutil.NewImageFromFile("./assets/fail.png")
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -513,7 +513,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 					ebitenutil.DebugPrint(screen, fmt.Sprintf("Speed: %.2f Bananas / Sec\nDistance: %.2f Bananas\nCompleted: 100%%\nFail!", finalBananasPerSecond, finalDistance))
 				}
 				bikerOp.GeoM.Scale(.25, .25)
-				biker, _, err := ebitenutil.NewImageFromFile("./sidebike.png")
+				biker, _, err := ebitenutil.NewImageFromFile("./assets/sidebike.png")
 				if err != nil {
 					log.Fatal(err)
 				}
