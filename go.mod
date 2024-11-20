@@ -1,6 +1,6 @@
 module github.com/nwindian/seekingtokyofindingfuji
 
-go 1.22.2
+go 1.23.2
 
 require github.com/hajimehoshi/ebiten/v2 v2.7.5
 

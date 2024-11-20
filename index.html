@@ -1,16 +1,27 @@
 <!DOCTYPE html>
-<script src="wasm_exec.js"></script>
-<script>
-// Polyfill
-if (!WebAssembly.instantiateStreaming) {
-    WebAssembly.instantiateStreaming = async (resp, importObject) => {
-        const source = await (await resp).arrayBuffer();
-        return await WebAssembly.instantiate(source, importObject);
-    };
-}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Go WebAssembly Example</title>
+</head>
+<body>
+  <h1>Go WebAssembly Example</h1>
+  <p>Loading WebAssembly...</p>
+  <script src="/static/wasm_exec.js"></script>
+  <script>
+    // Initialize the Go runtime
+    const go = new Go();
 
-const go = new Go();
-WebAssembly.instantiateStreaming(fetch("seekingtokyofindingfuji.wasm"), go.importObject).then(result => {
-    go.run(result.instance);
-});
-</script>
+    // Fetch and instantiate the WebAssembly file
+    WebAssembly.instantiateStreaming(fetch("/static/test.wasm"), go.importObject)
+      .then((result) => {
+        go.run(result.instance); // Run the WebAssembly instance
+        console.log("WebAssembly loaded successfully.");
+      })
+      .catch((err) => {
+        console.error("Error loading WebAssembly:", err);
+      });
+  </script>
+</body>
+</html>
