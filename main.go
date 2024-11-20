@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
@@ -145,12 +147,24 @@ func (g *Game) Update() error {
 		}
 
 		if g.counter%100 == 0 {
-			f, err := ebitenutil.OpenFile("./assets/sound.mp3")
+			resp, err := http.Get("/static/assets/sound.mp3")
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("Failed to fetch audio:", err)
+			}
+			defer resp.Body.Close()
+
+			buf := new(bytes.Buffer)
+			_, err = buf.ReadFrom(resp.Body)
+			if err != nil {
+				log.Fatal("Failed to read audio:", err)
 			}
 
-			s, err := mp3.DecodeWithoutResampling(f)
+			// f, err := ebitenutil.OpenFile("./assets/sound.mp3")
+			// if err != nil {
+			// 	log.Fatal(err)
+			// }
+
+			s, err := mp3.DecodeWithoutResampling(buf)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -537,6 +551,21 @@ func main() {
 	ebiten.Monitor().Size()
 	ebiten.SetWindowTitle("Seeking Tokyo Finding Fuji")
 	// Call ebiten.RunGame to start your game loop.
+
+	go func() {
+		// Serve files from the "static" directory
+		http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
+		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
+		// Serve the HTML file
+		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, "index.html")
+		})
+
+		log.Println("Server started at http://localhost:8080")
+		log.Fatal(http.ListenAndServe(":8080", nil))
+	}()
+
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}
